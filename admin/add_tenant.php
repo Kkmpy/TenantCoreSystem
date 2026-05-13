@@ -30,9 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $user_id = $conn->insert_id; // IMPORTANT LINK ID
 
-    /* =========================
-       STEP 2: CREATE TENANT PROFILE
-    ========================= */
+    /* STEP 2: CREATE TENANT PROFILE*/
     $status = 1;
 
     $stmt2 = $conn->prepare("
@@ -56,3 +54,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 }
 ?>
+

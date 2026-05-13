@@ -40,6 +40,7 @@ body{
     display:flex;
     background:var(--bg);
     color:var(--text);
+    transition: all 0.3s ease;
 }
 
 /* SIDEBAR */
@@ -52,18 +53,32 @@ body{
     left:0;
     top:0;
     padding-top:20px;
-    transition:0.3s;
-    overflow:hidden;
+    transition:0.3s ease;
 }
 
 .sidebar.collapsed{
     width:70px;
 }
 
-/* hide text when collapsed */
+/* FIXED COLLAPSE BEHAVIOR */
 .sidebar.collapsed .text,
-.sidebar.collapsed .logo p{
-    display:none;
+.sidebar.collapsed .logo p,
+.sidebar.collapsed .logo h2{
+    opacity:0;
+    visibility:hidden;
+    width:0;
+    height:0;
+    overflow:hidden;
+}
+
+/* center icons when collapsed */
+.sidebar.collapsed a{
+    justify-content:center;
+    padding:14px 0;
+}
+
+.sidebar.collapsed a .icon{
+    margin:0;
 }
 
 .logo{
@@ -84,6 +99,7 @@ body{
     padding:14px 20px;
     margin:6px 10px;
     border-radius:10px;
+    transition:0.3s;
 }
 
 .sidebar a:hover{
@@ -100,7 +116,7 @@ body{
     margin-left:240px;
     width:calc(100% - 240px);
     padding:20px;
-    transition:0.3s;
+    transition:0.3s ease;
 }
 
 .sidebar.collapsed ~ .main-content{
@@ -162,6 +178,11 @@ button{
     border-radius:12px;
     box-shadow:var(--shadow);
     position:relative;
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
 }
 
 .card h4{
