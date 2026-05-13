@@ -10,30 +10,43 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $email = $_POST['email'];
 $password = $_POST['password'];
 
-$sql = "SELECT * FROM users WHERE email='$email' AND password='$password'";
-$result = mysqli_query($conn, $sql);
+/* GET USER BY EMAIL (both admin + tenant) */
+$stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if (!$result) {
-    die("Database error: " . mysqli_error($conn));
+/* CHECK USER EXISTS */
+if ($result->num_rows === 0) {
+    die("Invalid login details");
 }
 
-if (mysqli_num_rows($result) > 0) {
+$user = $result->fetch_assoc();
 
-    $user = mysqli_fetch_assoc($result);
+/* CHECK PASSWORD */
+if ($user['password'] !== $password) {
+    die("Wrong password");
+}
 
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['email'] = $user['email'];
-    $_SESSION['role'] = $user['role'];
+/* SET COMMON SESSION */
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['role'] = $user['role'];
+$_SESSION['email'] = $user['email'];
 
-    if ($user['role'] === 'admin') {
-        header("Location: admin/dashboard.php");
-        exit();
-    } else {
-        header("Location: tenant/dashboard.php");
-        exit();
-    }
+/* ROLE REDIRECT */
+if ($user['role'] === 'admin') {
+
+    header("Location: admin/dashboard.php");
+    exit();
+
+} elseif ($user['role'] === 'tenant') {
+
+    $_SESSION['tenant_id'] = $user['tenant_id'];
+
+    header("Location: tenant/dashboard.php");
+    exit();
 
 } else {
-    echo "Invalid login details";
+    die("Unknown role");
 }
 ?>

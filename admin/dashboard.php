@@ -1,5 +1,7 @@
 <?php
+include_once __DIR__ . '/../includes/db.php';
 include '../includes/auth.php';
+
 requireLogin();
 requireRole('admin');
 ?>
@@ -58,6 +60,12 @@ body{
     width:70px;
 }
 
+/* hide text when collapsed */
+.sidebar.collapsed .text,
+.sidebar.collapsed .logo p{
+    display:none;
+}
+
 .logo{
     text-align:center;
     margin-bottom:30px;
@@ -65,11 +73,6 @@ body{
 
 .logo h2{
     font-size:20px;
-}
-
-.sidebar.collapsed .logo p,
-.sidebar.collapsed a span.text{
-    display:none;
 }
 
 .sidebar a{
@@ -81,19 +84,18 @@ body{
     padding:14px 20px;
     margin:6px 10px;
     border-radius:10px;
-    transition:0.3s;
 }
 
 .sidebar a:hover{
     background:rgba(255,255,255,0.15);
 }
 
-.sidebar span.icon{
+.sidebar .icon{
     width:25px;
     text-align:center;
 }
 
-/* MAIN CONTENT */
+/* MAIN */
 .main-content{
     margin-left:240px;
     width:calc(100% - 240px);
@@ -121,10 +123,6 @@ body{
     display:flex;
     gap:10px;
     align-items:center;
-}
-
-.topbar h1{
-    font-size:22px;
 }
 
 .welcome{
@@ -218,27 +216,42 @@ button{
     min-width:150px;
 }
 
-/* TABLE */
-table{
-    width:100%;
-    border-collapse:collapse;
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
 }
 
-table th,table td{
-    padding:10px;
-    border-bottom:1px solid #ddd;
-}
-
-.empty{
-    text-align:center;
+.modal-content{
+    background:var(--card);
     padding:20px;
-    color:var(--muted);
+    border-radius:10px;
+    width:320px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.modal-content input{
+    padding:10px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+.modal-content button{
+    background:var(--primary);
+    color:#fff;
 }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
     <div class="logo">
@@ -247,7 +260,7 @@ table th,table td{
     </div>
 
     <a href="#"><span class="icon">🏠</span><span class="text">Dashboard</span></a>
-    <a href="#"><span class="icon">👥</span><span class="text">Tenants</span></a>
+    <a href="tenants.php"><span class="icon">👥</span><span class="text">Tenants</span></a>
     <a href="#"><span class="icon">💳</span><span class="text">Payments</span></a>
     <a href="#"><span class="icon">🏢</span><span class="text">Properties</span></a>
     <a href="#"><span class="icon">📊</span><span class="text">Reports</span></a>
@@ -256,6 +269,7 @@ table th,table td{
 
 </div>
 
+<!-- MAIN -->
 <div class="main-content">
 
     <div class="topbar">
@@ -265,62 +279,83 @@ table th,table td{
             <button class="dark-btn" onclick="toggleDark()">🌙</button>
         </div>
 
-        <h1>Admin Dashboard</h1>
-
-        <div class="welcome">
-            Welcome, <?php echo $_SESSION['email']; ?>
+        <div>
+            <h2>Admin Dashboard</h2>
+            <div class="welcome">
+                Welcome, <?php echo $_SESSION['email']; ?>
+            </div>
         </div>
 
     </div>
 
+    <!-- CARDS -->
     <div class="cards">
 
         <div class="card blue">
             <span class="icon">🏢</span>
             <h4>Total Properties</h4>
-            <h2 class="count" data-value="0">0</h2>
+            <h2>0</h2>
         </div>
 
         <div class="card green">
             <span class="icon">🏠</span>
             <h4>Occupied Units</h4>
-            <h2 class="count" data-value="0">0</h2>
+            <h2>0</h2>
         </div>
 
         <div class="card red">
             <span class="icon">💰</span>
             <h4>Rent Due</h4>
-            <h2 class="count" data-value="0">0</h2>
+            <h2>0</h2>
         </div>
 
         <div class="card teal">
             <span class="icon">📈</span>
             <h4>Income</h4>
-            <h2 class="count" data-value="0">0</h2>
+            <h2>0</h2>
         </div>
 
     </div>
 
+    <!-- ACTIONS -->
     <div class="actions">
-        <button>Add Tenant</button>
+        <button onclick="openModal()">Add Tenant</button>
         <button>Add Property</button>
         <button>Record Payment</button>
     </div>
 
+    <!-- GRID -->
     <div class="dashboard-grid">
 
         <div class="box">
             <h3>Recent Payments</h3>
-            <div class="empty">No payments yet</div>
+            <div>No payments yet</div>
         </div>
 
         <div class="box">
             <h3>Arrears</h3>
-            <div class="empty">No data yet</div>
+            <div>No data yet</div>
         </div>
 
     </div>
 
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="tenantModal">
+    <div class="modal-content">
+        <h3>Add Tenant</h3>
+
+        <form method="POST" action="add_tenant.php">
+            <input type="text" name="full_name" placeholder="Full Name" required>
+            <input type="text" name="phone" placeholder="Phone" required>
+            <input type="email" name="email" placeholder="Email">
+            <input type="number" name="property_id" placeholder="Property ID">
+
+            <button type="submit">Save Tenant</button>
+            <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -333,14 +368,18 @@ function toggleDark(){
     localStorage.setItem("dark", document.body.classList.contains("dark"));
 }
 
+function openModal(){
+    document.getElementById("tenantModal").style.display = "flex";
+}
+
+function closeModal(){
+    document.getElementById("tenantModal").style.display = "none";
+}
+
 window.onload = function(){
     if(localStorage.getItem("dark") === "true"){
         document.body.classList.add("dark");
     }
-
-    document.querySelectorAll(".count").forEach(c=>{
-        c.innerText = 0;
-    });
 };
 </script>
 
