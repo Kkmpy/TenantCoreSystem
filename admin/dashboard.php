@@ -14,71 +14,64 @@ requireRole('admin');
 <style>
 :root{
     --bg:#eef1f5;
-    --card:#ffffff;
+    --card:rgba(255,255,255,0.75);
     --text:#111;
     --muted:#666;
     --primary:#1565c0;
-    --shadow:0 2px 10px rgba(0,0,0,0.06);
+    --shadow:0 10px 25px rgba(0,0,0,0.08);
 }
 
 body.dark{
     --bg:#0f172a;
-    --card:#1e293b;
+    --card:rgba(30,41,59,0.75);
     --text:#fff;
     --muted:#cbd5e1;
-    --shadow:0 2px 10px rgba(0,0,0,0.4);
+    --shadow:0 10px 25px rgba(0,0,0,0.4);
 }
 
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial,sans-serif;
+    font-family:'Segoe UI', sans-serif;
 }
 
 body{
     display:flex;
     background:var(--bg);
     color:var(--text);
-    transition: all 0.3s ease;
+    transition:0.3s ease;
 }
 
 /* SIDEBAR */
 .sidebar{
     width:240px;
     min-height:100vh;
-    background:linear-gradient(to bottom,#1565c0,#0d47a1);
+    background:linear-gradient(180deg,#0f172a,#1e3a8a);
     color:#fff;
     position:fixed;
     left:0;
     top:0;
     padding-top:20px;
     transition:0.3s ease;
+    box-shadow:10px 0 30px rgba(0,0,0,0.2);
 }
 
 .sidebar.collapsed{
     width:70px;
 }
 
-/* FIXED COLLAPSE BEHAVIOR */
 .sidebar.collapsed .text,
 .sidebar.collapsed .logo p,
 .sidebar.collapsed .logo h2{
     opacity:0;
     visibility:hidden;
-    width:0;
     height:0;
     overflow:hidden;
 }
 
-/* center icons when collapsed */
 .sidebar.collapsed a{
     justify-content:center;
-    padding:14px 0;
-}
-
-.sidebar.collapsed a .icon{
-    margin:0;
 }
 
 .logo{
@@ -94,16 +87,17 @@ body{
     display:flex;
     align-items:center;
     gap:12px;
-    color:#fff;
+    color:#cbd5e1;
     text-decoration:none;
     padding:14px 20px;
     margin:6px 10px;
-    border-radius:10px;
+    border-radius:12px;
     transition:0.3s;
 }
 
 .sidebar a:hover{
-    background:rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.12);
+    transform:translateX(4px);
 }
 
 .sidebar .icon{
@@ -127,8 +121,9 @@ body{
 /* TOPBAR */
 .topbar{
     background:var(--card);
+    backdrop-filter:blur(12px);
     padding:15px 20px;
-    border-radius:10px;
+    border-radius:14px;
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -149,9 +144,10 @@ body{
 /* BUTTONS */
 button{
     border:none;
-    padding:8px 12px;
-    border-radius:6px;
+    padding:9px 12px;
+    border-radius:8px;
     cursor:pointer;
+    transition:0.2s;
 }
 
 .toggle-btn{
@@ -160,8 +156,12 @@ button{
 }
 
 .dark-btn{
-    background:#333;
+    background:#1f2937;
     color:#fff;
+}
+
+button:hover{
+    transform:translateY(-2px);
 }
 
 /* CARDS */
@@ -174,15 +174,16 @@ button{
 
 .card{
     background:var(--card);
+    backdrop-filter:blur(12px);
     padding:18px;
-    border-radius:12px;
+    border-radius:16px;
     box-shadow:var(--shadow);
     position:relative;
     transition:0.3s;
 }
 
 .card:hover{
-    transform:translateY(-5px);
+    transform:translateY(-6px);
 }
 
 .card h4{
@@ -194,19 +195,6 @@ button{
     font-size:26px;
 }
 
-.card .icon{
-    position:absolute;
-    right:15px;
-    top:15px;
-    font-size:22px;
-}
-
-/* COLORS */
-.blue{color:#1976d2;}
-.green{color:#2e7d32;}
-.red{color:#e53935;}
-.teal{color:#00897b;}
-
 /* GRID */
 .dashboard-grid{
     display:grid;
@@ -217,8 +205,9 @@ button{
 
 .box{
     background:var(--card);
+    backdrop-filter:blur(12px);
     padding:18px;
-    border-radius:10px;
+    border-radius:14px;
     box-shadow:var(--shadow);
 }
 
@@ -231,7 +220,7 @@ button{
 }
 
 .actions button{
-    background:var(--primary);
+    background:linear-gradient(135deg,#1565c0,#1e88e5);
     color:#fff;
     flex:1;
     min-width:150px;
@@ -249,8 +238,9 @@ button{
 
 .modal-content{
     background:var(--card);
+    backdrop-filter:blur(12px);
     padding:20px;
-    border-radius:10px;
+    border-radius:12px;
     width:320px;
     display:flex;
     flex-direction:column;
@@ -260,12 +250,7 @@ button{
 .modal-content input{
     padding:10px;
     border:1px solid #ddd;
-    border-radius:6px;
-}
-
-.modal-content button{
-    background:var(--primary);
-    color:#fff;
+    border-radius:8px;
 }
 </style>
 </head>
@@ -312,25 +297,25 @@ button{
     <!-- CARDS -->
     <div class="cards">
 
-        <div class="card blue">
+        <div class="card">
             <span class="icon">🏢</span>
             <h4>Total Properties</h4>
             <h2>0</h2>
         </div>
 
-        <div class="card green">
+        <div class="card">
             <span class="icon">🏠</span>
             <h4>Occupied Units</h4>
             <h2>0</h2>
         </div>
 
-        <div class="card red">
+        <div class="card">
             <span class="icon">💰</span>
             <h4>Rent Due</h4>
             <h2>0</h2>
         </div>
 
-        <div class="card teal">
+        <div class="card">
             <span class="icon">📈</span>
             <h4>Income</h4>
             <h2>0</h2>
