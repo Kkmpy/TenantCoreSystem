@@ -5,9 +5,7 @@ include '../includes/auth.php';
 requireLogin();
 requireRole('admin');
 
-/* =========================
-   BASIC STATS
-========================= */
+/* BASIC STATS */
 
 $properties = $conn->query("SELECT COUNT(*) AS total FROM properties")
     ?->fetch_assoc()['total'] ?? 0;
@@ -27,9 +25,7 @@ $vacant = $conn->query("
     WHERE status='vacant'
 ")?->fetch_assoc()['total'] ?? 0;
 
-/* =========================
-   PROPERTY PERFORMANCE
-========================= */
+/*PROPERTY PERFORMANCE*/
 
 $propData = $conn->query("
     SELECT p.property_name,
@@ -69,6 +65,7 @@ while ($row = $propData->fetch_assoc()) {
 }
 
 /* DARK MODE */
+
 body.dark{
     --bg:#0f172a;
     --card:#111827;
@@ -120,6 +117,7 @@ body{
 }
 
 /* MAIN */
+
 .main{
     margin-left:240px;
     padding:20px;
@@ -139,6 +137,7 @@ body{
 }
 
 /* CARDS */
+
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -165,6 +164,7 @@ body{
 }
 
 /* COLORS */
+
 .green{color:var(--green);}
 .red{color:var(--red);}
 .yellow{color:var(--yellow);}
@@ -179,6 +179,7 @@ body{
 }
 
 /* BOX */
+
 .box{
     background:var(--card);
     padding:18px;
