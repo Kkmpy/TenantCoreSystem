@@ -4,6 +4,79 @@ include '../includes/auth.php';
 
 requireLogin();
 requireRole('admin');
+
+//LOAD VACANT UNITS
+$units = $conn->query("
+    SELECT 
+        u.id,
+        u.unit_code,
+        u.unit_type,
+        p.property_name
+    FROM property_units u
+    LEFT JOIN properties p 
+        ON u.property_id = p.id
+    WHERE u.status = 'vacant'
+    ORDER BY p.property_name ASC
+");
+
+//ADD PROPERTY
+if (isset($_POST['add_property'])) {
+
+    $property_name = trim($_POST['property_name']);
+    $location      = trim($_POST['location']);
+    $total_units   = (int) $_POST['total_units'];
+
+    if (
+        empty($property_name) ||
+        empty($location) ||
+        $total_units <= 0
+    ) {
+
+        echo "<script>alert('Please fill all property fields correctly.');</script>";
+
+    } else {
+
+        /* CHECK DUPLICATE PROPERTY */
+        $check = $conn->prepare("
+            SELECT id
+            FROM properties
+            WHERE property_name = ?
+        ");
+
+        $check->bind_param("s", $property_name);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows > 0) {
+
+            echo "<script>alert('Property already exists!');</script>";
+
+        } else {
+
+            $stmt = $conn->prepare("
+                INSERT INTO properties
+                (property_name, location, total_units)
+                VALUES (?, ?, ?)
+            ");
+
+            $stmt->bind_param(
+                "ssi",
+                $property_name,
+                $location,
+                $total_units
+            );
+
+            if ($stmt->execute()) {
+
+                echo "<script>alert('Property added successfully!');</script>";
+
+            } else {
+
+                echo "<script>alert('Failed to add property!');</script>";
+            }
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -12,6 +85,7 @@ requireRole('admin');
 <title>Admin Dashboard</title>
 
 <style>
+
 :root{
     --bg:#eef1f5;
     --card:rgba(255,255,255,0.75);
@@ -44,6 +118,7 @@ body{
 }
 
 /* SIDEBAR */
+
 .sidebar{
     width:240px;
     min-height:100vh;
@@ -106,6 +181,7 @@ body{
 }
 
 /* MAIN */
+
 .main-content{
     margin-left:240px;
     width:calc(100% - 240px);
@@ -119,6 +195,7 @@ body{
 }
 
 /* TOPBAR */
+
 .topbar{
     background:var(--card);
     backdrop-filter:blur(12px);
@@ -142,12 +219,18 @@ body{
 }
 
 /* BUTTONS */
+
 button{
     border:none;
-    padding:9px 12px;
-    border-radius:8px;
+    padding:10px 14px;
+    border-radius:10px;
     cursor:pointer;
     transition:0.2s;
+    font-weight:600;
+}
+
+button:hover{
+    transform:translateY(-2px);
 }
 
 .toggle-btn{
@@ -160,14 +243,11 @@ button{
     color:#fff;
 }
 
-button:hover{
-    transform:translateY(-2px);
-}
-
 /* CARDS */
+
 .cards{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:15px;
     margin-top:20px;
 }
@@ -175,46 +255,36 @@ button:hover{
 .card{
     background:var(--card);
     backdrop-filter:blur(12px);
-    padding:18px;
-    border-radius:16px;
+    padding:20px;
+    border-radius:18px;
     box-shadow:var(--shadow);
-    position:relative;
     transition:0.3s;
 }
 
 .card:hover{
-    transform:translateY(-6px);
+    transform:translateY(-5px);
+}
+
+.card-icon{
+    font-size:28px;
 }
 
 .card h4{
     color:var(--muted);
+    margin-top:10px;
+    font-size:14px;
 }
 
 .card h2{
     margin-top:10px;
-    font-size:26px;
-}
-
-/* GRID */
-.dashboard-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-    gap:15px;
-    margin-top:20px;
-}
-
-.box{
-    background:var(--card);
-    backdrop-filter:blur(12px);
-    padding:18px;
-    border-radius:14px;
-    box-shadow:var(--shadow);
+    font-size:30px;
 }
 
 /* ACTIONS */
+
 .actions{
     display:flex;
-    gap:10px;
+    gap:12px;
     flex-wrap:wrap;
     margin-top:20px;
 }
@@ -223,7 +293,77 @@ button:hover{
     background:linear-gradient(135deg,#1565c0,#1e88e5);
     color:#fff;
     flex:1;
-    min-width:150px;
+    min-width:170px;
+}
+
+/* GRID */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:15px;
+    margin-top:20px;
+}
+
+.box{
+    background:var(--card);
+    backdrop-filter:blur(12px);
+    padding:20px;
+    border-radius:16px;
+    box-shadow:var(--shadow);
+}
+
+/* PROPERTY ITEM */
+
+.property-item{
+    padding:12px;
+    background:#f8fafc;
+    border-radius:12px;
+    margin-bottom:10px;
+}
+
+body.dark .property-item{
+    background:#1e293b;
+}
+.property-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    max-height:260px;
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+.property-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
+    transition:0.2s;
+}
+
+.property-row:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,0.1);
+}
+
+.property-row .left{
+    display:flex;
+    flex-direction:column;
+}
+
+.property-row .left span{
+    font-size:12px;
+    color:var(--muted);
+}
+
+.property-row .right{
+    font-weight:600;
+    color:var(--primary);
+    font-size:13px;
 }
 
 /* MODAL */
@@ -234,23 +374,40 @@ button:hover{
     background:rgba(0,0,0,0.5);
     justify-content:center;
     align-items:center;
+    z-index:999;
 }
 
 .modal-content{
     background:var(--card);
     backdrop-filter:blur(12px);
-    padding:20px;
-    border-radius:12px;
-    width:320px;
+    padding:25px;
+    border-radius:16px;
+    width:350px;
+    box-shadow:var(--shadow);
+}
+
+.modal-content h3{
+    margin-bottom:15px;
+}
+
+.modal-content input,
+.modal-content select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    margin-bottom:12px;
+    outline:none;
+}
+
+.modal-buttons{
     display:flex;
-    flex-direction:column;
     gap:10px;
 }
 
-.modal-content input{
-    padding:10px;
-    border:1px solid #ddd;
-    border-radius:8px;
+.cancel-btn{
+    background:#dc2626 !important;
+    color:#fff;
 }
 </style>
 </head>
@@ -265,19 +422,47 @@ button:hover{
         <p>System</p>
     </div>
 
-    <a href="#"><span class="icon">🏠</span><span class="text">Dashboard</span></a>
-    <a href="tenants.php"><span class="icon">👥</span><span class="text">Tenants</span></a>
-    <a href="#"><span class="icon">💳</span><span class="text">Payments</span></a>
-    <a href="#"><span class="icon">🏢</span><span class="text">Properties</span></a>
-    <a href="#"><span class="icon">📊</span><span class="text">Reports</span></a>
-    <a href="#"><span class="icon">🛠</span><span class="text">Maintenance</span></a>
-    <a href="../logout.php"><span class="icon">🚪</span><span class="text">Logout</span></a>
+    <a href="#">
+        <span class="icon">🏠</span>
+        <span class="text">Dashboard</span>
+    </a>
+
+    <a href="tenants.php">
+        <span class="icon">👥</span>
+        <span class="text">Tenants</span>
+    </a>
+
+    <a href="#">
+        <span class="icon">💳</span>
+        <span class="text">Payments</span>
+    </a>
+
+    <a href="properties.php">
+        <span class="icon">🏢</span>
+        <span class="text">Properties</span>
+    </a>
+
+    <a href="reports.php">
+        <span class="icon">📊</span>
+        <span class="text">Reports</span>
+    </a>
+
+    <a href="#">
+        <span class="icon">🛠</span>
+        <span class="text">Maintenance</span>
+    </a>
+
+    <a href="../logout.php">
+        <span class="icon">🚪</span>
+        <span class="text">Logout</span>
+    </a>
 
 </div>
 
 <!-- MAIN -->
 <div class="main-content">
 
+    <!-- TOPBAR -->
     <div class="topbar">
 
         <div class="top-left">
@@ -287,6 +472,7 @@ button:hover{
 
         <div>
             <h2>Admin Dashboard</h2>
+
             <div class="welcome">
                 Welcome, <?php echo $_SESSION['email']; ?>
             </div>
@@ -298,95 +484,366 @@ button:hover{
     <div class="cards">
 
         <div class="card">
-            <span class="icon">🏢</span>
+
+            <div class="card-icon">🏢</div>
+
             <h4>Total Properties</h4>
-            <h2>0</h2>
+
+            <h2>
+                <?php
+                $res = $conn->query("
+                    SELECT COUNT(*) AS total
+                    FROM properties
+                ");
+
+                echo $res->fetch_assoc()['total'];
+                ?>
+            </h2>
+
         </div>
 
         <div class="card">
-            <span class="icon">🏠</span>
+
+            <div class="card-icon">🏠</div>
+
             <h4>Occupied Units</h4>
-            <h2>0</h2>
+
+            <h2>
+                <?php
+                $res = $conn->query("
+                    SELECT COUNT(*) AS total
+                    FROM property_units
+                    WHERE status='occupied'
+                ");
+
+                echo $res->fetch_assoc()['total'];
+                ?>
+            </h2>
+
         </div>
 
         <div class="card">
-            <span class="icon">💰</span>
-            <h4>Rent Due</h4>
-            <h2>0</h2>
+
+            <div class="card-icon">📂</div>
+
+            <h4>Vacant Units</h4>
+
+            <h2>
+                <?php
+                $res = $conn->query("
+                    SELECT COUNT(*) AS total
+                    FROM property_units
+                    WHERE status='vacant'
+                ");
+
+                echo $res->fetch_assoc()['total'];
+                ?>
+            </h2>
+
         </div>
 
         <div class="card">
-            <span class="icon">📈</span>
-            <h4>Income</h4>
-            <h2>0</h2>
+
+            <div class="card-icon">📈</div>
+
+            <h4>Total Units</h4>
+
+            <h2>
+                <?php
+                $res = $conn->query("
+                    SELECT SUM(total_units) AS total
+                    FROM properties
+                ");
+
+                $row = $res->fetch_assoc();
+
+                echo $row['total'] ?? 0;
+                ?>
+            </h2>
+
         </div>
 
     </div>
 
     <!-- ACTIONS -->
     <div class="actions">
-        <button onclick="openModal()">Add Tenant</button>
-        <button>Add Property</button>
-        <button>Record Payment</button>
+
+        <button type="button" onclick="openTenantModal()">
+            Add Tenant
+        </button>
+
+        <button type="button" onclick="openPropertyModal()">
+            Add Property
+        </button>
+
+        <button type="button">
+            Record Payment
+        </button>
+
     </div>
 
     <!-- GRID -->
     <div class="dashboard-grid">
 
-        <div class="box">
-            <h3>Recent Payments</h3>
-            <div>No payments yet</div>
+      <div class="box">
+
+    <h3>Property Overview</h3>
+
+    <div class="property-list">
+
+        <?php
+        $properties = $conn->query("
+            SELECT property_name, location, total_units
+            FROM properties
+            ORDER BY id DESC
+            LIMIT 6
+        ");
+
+        if ($properties->num_rows > 0) {
+
+            while($row = $properties->fetch_assoc()) {
+        ?>
+
+        <div class="property-row">
+
+            <div class="left">
+                <strong><?= htmlspecialchars($row['property_name']) ?></strong>
+                <span><?= htmlspecialchars($row['location']) ?></span>
+            </div>
+
+            <div class="right">
+                <?= (int)$row['total_units'] ?> units
+            </div>
+
         </div>
 
-        <div class="box">
-            <h3>Arrears</h3>
-            <div>No data yet</div>
-        </div>
+        <?php
+            }
+        } else {
+            echo "<div style='color:var(--muted)'>No properties added yet</div>";
+        }
+        ?>
 
     </div>
 
 </div>
 
-<!-- MODAL -->
+</div>
+
+<!-- TENANT MODAL -->
 <div class="modal" id="tenantModal">
+
     <div class="modal-content">
+
         <h3>Add Tenant</h3>
 
         <form method="POST" action="add_tenant.php">
-            <input type="text" name="full_name" placeholder="Full Name" required>
-            <input type="text" name="phone" placeholder="Phone" required>
-            <input type="email" name="email" placeholder="Email">
-            <input type="number" name="property_id" placeholder="Property ID">
 
-            <button type="submit">Save Tenant</button>
-            <button type="button" onclick="closeModal()">Cancel</button>
+            <input
+                type="text"
+                name="full_name"
+                placeholder="Full Name"
+                required
+            >
+
+            <input
+                type="text"
+                name="phone"
+                placeholder="Phone"
+                required
+            >
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Email"
+            >
+
+            <select name="unit_id" required>
+
+                <option value="">
+                    -- Select Vacant Unit --
+                </option>
+
+                <?php if($units && $units->num_rows > 0): ?>
+
+                    <?php while($u = $units->fetch_assoc()): ?>
+
+                        <option value="<?= $u['id'] ?>">
+
+                            <?= htmlspecialchars($u['property_name']) ?>
+                            -
+                            <?= htmlspecialchars($u['unit_code']) ?>
+                            (<?= htmlspecialchars($u['unit_type']) ?>)
+
+                        </option>
+
+                    <?php endwhile; ?>
+
+                <?php else: ?>
+
+                    <option value="">
+                        No vacant units available
+                    </option>
+
+                <?php endif; ?>
+
+            </select>
+
+            <small style="color:gray;font-size:12px;">
+                Only vacant units can be assigned
+            </small>
+
+            <br><br>
+
+            <div class="modal-buttons">
+
+                <button type="submit">
+                    Save Tenant
+                </button>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeTenantModal()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
         </form>
+
     </div>
+
+</div>
+
+<!-- PROPERTY MODAL -->
+<div class="modal" id="propertyModal">
+
+    <div class="modal-content">
+
+        <h3>Add Property</h3>
+
+        <form method="POST">
+
+            <input
+                type="text"
+                name="property_name"
+                placeholder="Property Name"
+                required
+            >
+
+            <input
+                type="text"
+                name="location"
+                placeholder="Location"
+                required
+            >
+
+            <input
+                type="number"
+                name="total_units"
+                placeholder="Total Units / Houses"
+                required
+            >
+
+            <div class="modal-buttons">
+
+                <button
+                    type="submit"
+                    name="add_property"
+                >
+                    Save Property
+                </button>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closePropertyModal()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
 <script>
-function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("collapsed");
+
+function toggleSidebar() {
+
+    document
+        .getElementById("sidebar")
+        .classList.toggle("collapsed");
 }
 
-function toggleDark(){
+function toggleDark() {
+
     document.body.classList.toggle("dark");
-    localStorage.setItem("dark", document.body.classList.contains("dark"));
+
+    localStorage.setItem(
+        "dark",
+        document.body.classList.contains("dark")
+    );
 }
 
-function openModal(){
+/* TENANT MODAL */
+
+function openTenantModal() {
+
     document.getElementById("tenantModal").style.display = "flex";
 }
 
-function closeModal(){
+function closeTenantModal() {
+
     document.getElementById("tenantModal").style.display = "none";
 }
 
-window.onload = function(){
-    if(localStorage.getItem("dark") === "true"){
+/* PROPERTY MODAL */
+
+function openPropertyModal() {
+
+    document.getElementById("propertyModal").style.display = "flex";
+}
+
+function closePropertyModal() {
+
+    document.getElementById("propertyModal").style.display = "none";
+}
+
+/* DARK MODE */
+
+window.onload = function() {
+
+    if(localStorage.getItem("dark") === "true") {
+
         document.body.classList.add("dark");
     }
 };
+
+/* CLOSE MODAL OUTSIDE CLICK */
+
+window.onclick = function(event) {
+
+    let tenantModal = document.getElementById("tenantModal");
+    let propertyModal = document.getElementById("propertyModal");
+
+    if(event.target == tenantModal) {
+
+        closeTenantModal();
+    }
+
+    if(event.target == propertyModal) {
+
+        closePropertyModal();
+    }
+};
+
 </script>
 
 </body>
