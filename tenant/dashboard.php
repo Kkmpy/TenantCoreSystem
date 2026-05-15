@@ -180,7 +180,7 @@ body{
     border:1px solid var(--border);
 }
 
-/* BIG FEATURE CARD (ALLOCATED HOUSE) */
+/* BIG FEATURE CARD */
 .feature-card{
     grid-column:1 / -1;
     background:linear-gradient(135deg,#2563eb,#1d4ed8);
@@ -277,6 +277,11 @@ body{
     <a href="?view=maintenance" class="<?= $view=='maintenance'?'active':'' ?>">🛠 Maintenance</a>
     <a href="?view=password" class="<?= $view=='password'?'active':'' ?>">🔐 Password</a>
 
+    <!-- ✅ ADDED ONLY THIS -->
+    <a href="../logout.php" style="color:#f87171;">
+        🚪 Logout
+    </a>
+
 </div>
 
 <!-- MAIN -->
@@ -319,7 +324,6 @@ body{
             <p>05 June 2026</p>
         </div>
 
-        <!-- FEATURED HOUSE CARD -->
         <div class="feature-card">
 
             <h3>🏠 Allocated House</h3>
@@ -337,19 +341,14 @@ body{
 
         </div>
 
-        <!-- ACTIONS -->
         <div class="card" style="grid-column:1/-1;">
-
             <h3>Quick Actions</h3>
 
             <div class="actions">
-
                 <button>Pay Rent</button>
                 <button>Download Receipt</button>
                 <button>Maintenance Request</button>
-
             </div>
-
         </div>
 
     </div>
